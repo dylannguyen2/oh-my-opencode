@@ -455,6 +455,12 @@ export function Autocomplete(props: {
         onSelect: () => command.trigger("theme.switch"),
       },
       {
+        display: "/explore",
+        aliases: ["/files", "/tree"],
+        description: "toggle file explorer",
+        onSelect: () => command.trigger("explorer.toggle"),
+      },
+      {
         display: "/editor",
         description: "open editor",
         onSelect: () => command.trigger("prompt.editor", "prompt"),

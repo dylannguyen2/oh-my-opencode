@@ -2,7 +2,19 @@ import { render, useKeyboard, useRenderer, useTerminalDimensions } from "@opentu
 import { Clipboard } from "@tui/util/clipboard"
 import { TextAttributes } from "@opentui/core"
 import { RouteProvider, useRoute } from "@tui/context/route"
-import { Switch, Match, createEffect, untrack, ErrorBoundary, createSignal, onMount, batch, Show, on } from "solid-js"
+import {
+  Switch,
+  Match,
+  createEffect,
+  untrack,
+  ErrorBoundary,
+  createSignal,
+  onMount,
+  batch,
+  Show,
+  on,
+  createMemo,
+} from "solid-js"
 import { Installation } from "@/installation"
 import { Flag } from "@/flag/flag"
 import { DialogProvider, useDialog } from "@tui/ui/dialog"
@@ -36,6 +48,9 @@ import { ArgsProvider, useArgs, type Args } from "./context/args"
 import open from "open"
 import { writeHeapSnapshot } from "v8"
 import { PromptRefProvider, usePromptRef } from "./context/prompt"
+import { ExplorerProvider, useExplorer } from "./context/explorer"
+import { ExplorerSidebar } from "./component/explorer"
+import { FilePreview } from "./component/explorer/file-preview"
 
 async function getTerminalBackgroundColor(): Promise<"dark" | "light"> {
   // can't set raw mode if not a TTY
@@ -142,7 +157,9 @@ export function tui(input: {
                                       <FrecencyProvider>
                                         <PromptHistoryProvider>
                                           <PromptRefProvider>
-                                            <App />
+                                            <ExplorerProvider>
+                                              <App />
+                                            </ExplorerProvider>
                                           </PromptRefProvider>
                                         </PromptHistoryProvider>
                                       </FrecencyProvider>
@@ -195,6 +212,7 @@ function App() {
   const sync = useSync()
   const exit = useExit()
   const promptRef = usePromptRef()
+  const explorer = useExplorer()
 
   // Wire up console copy-to-clipboard via opentui's onCopySelection callback
   renderer.console.onCopySelection = async (text: string) => {
@@ -440,6 +458,15 @@ function App() {
       category: "System",
     },
     {
+      title: explorer.visible() ? "Hide explorer" : "Show explorer",
+      value: "explorer.toggle",
+      onSelect: (dialog) => {
+        explorer.setVisible(!explorer.visible())
+        dialog.clear()
+      },
+      category: "System",
+    },
+    {
       title: "Help",
       value: "help.show",
       onSelect: () => {
@@ -610,11 +637,28 @@ function App() {
     })
   })
 
+  const wide = createMemo(() => dimensions().width > 120)
+  const showPreview = createMemo(() => explorer.selected()?.type === "file" && wide())
+
+  useKeyboard((evt) => {
+    if (evt.ctrl && evt.name === "c") {
+      evt.preventDefault?.()
+      dialog.replace(() => (
+        <DialogAlert
+          title="Exit OpenCode?"
+          message="Are you sure you want to exit? Press Enter to confirm."
+          onConfirm={() => exit()}
+        />
+      ))
+    }
+  })
+
   return (
     <box
       width={dimensions().width}
       height={dimensions().height}
       backgroundColor={theme.background}
+      flexDirection="row"
       onMouseUp={async () => {
         if (Flag.OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT) {
           renderer.clearSelection()
@@ -629,14 +673,20 @@ function App() {
         }
       }}
     >
-      <Switch>
-        <Match when={route.data.type === "home"}>
-          <Home />
-        </Match>
-        <Match when={route.data.type === "session"}>
-          <Session />
-        </Match>
-      </Switch>
+      <ExplorerSidebar />
+      <box flexGrow={1} flexDirection="column" onMouseDown={() => explorer.setFocused(false)}>
+        <Switch>
+          <Match when={route.data.type === "home"}>
+            <Home />
+          </Match>
+          <Match when={route.data.type === "session"}>
+            <Session />
+          </Match>
+        </Switch>
+      </box>
+      <Show when={showPreview()}>
+        <FilePreview />
+      </Show>
     </box>
   )
 }

@@ -7,16 +7,31 @@ export type DialogAlertProps = {
   title: string
   message: string
   onConfirm?: () => void
+  onCancel?: () => void
+  showCancel?: boolean
 }
 
 export function DialogAlert(props: DialogAlertProps) {
   const dialog = useDialog()
   const { theme } = useTheme()
 
+  const handleCancel = () => {
+    props.onCancel?.()
+    dialog.clear()
+  }
+
+  const handleConfirm = () => {
+    props.onConfirm?.()
+    dialog.clear()
+  }
+
   useKeyboard((evt) => {
     if (evt.name === "return") {
-      props.onConfirm?.()
-      dialog.clear()
+      evt.preventDefault?.()
+      handleConfirm()
+    } else if (evt.name === "escape") {
+      evt.preventDefault?.()
+      handleCancel()
     }
   })
   return (
@@ -25,19 +40,34 @@ export function DialogAlert(props: DialogAlertProps) {
         <text attributes={TextAttributes.BOLD} fg={theme.text}>
           {props.title}
         </text>
-        <text fg={theme.textMuted}>esc</text>
+        <text fg={theme.textMuted}>esc cancel</text>
       </box>
       <box paddingBottom={1}>
         <text fg={theme.textMuted}>{props.message}</text>
       </box>
-      <box flexDirection="row" justifyContent="flex-end" paddingBottom={1}>
+      <box flexDirection="row" justifyContent="flex-end" gap={1} paddingBottom={1}>
+        {props.showCancel !== false && (
+          <box
+            paddingLeft={2}
+            paddingRight={2}
+            backgroundColor={theme.backgroundElement}
+            onMouseDown={(e) => {
+              e.stopPropagation?.()
+              e.preventDefault?.()
+              handleCancel()
+            }}
+          >
+            <text fg={theme.text}>cancel</text>
+          </box>
+        )}
         <box
           paddingLeft={3}
           paddingRight={3}
           backgroundColor={theme.primary}
-          onMouseUp={() => {
-            props.onConfirm?.()
-            dialog.clear()
+          onMouseDown={(e) => {
+            e.stopPropagation?.()
+            e.preventDefault?.()
+            handleConfirm()
           }}
         >
           <text fg={theme.selectedListItemText}>ok</text>

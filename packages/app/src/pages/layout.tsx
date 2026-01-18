@@ -731,6 +731,13 @@ export default function Layout(props: ParentProps) {
         onSelect: () => layout.sidebar.toggle(),
       },
       {
+        id: "explorer.toggle",
+        title: "Toggle explorer",
+        category: "View",
+        keybind: "mod+e",
+        onSelect: () => layout.explorer.toggle(),
+      },
+      {
         id: "project.open",
         title: "Open project",
         category: "Project",

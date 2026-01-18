@@ -15,7 +15,6 @@ import { Installation } from "@/installation"
 import { useKV } from "../context/kv"
 import { useCommandDialog } from "../component/dialog-command"
 
-// TODO: what is the best way to do this?
 let once = false
 
 export function Home() {
@@ -37,7 +36,6 @@ export function Home() {
   const isFirstTimeUser = createMemo(() => sync.data.session.length === 0)
   const tipsHidden = createMemo(() => kv.get("tips_hidden", false))
   const showTips = createMemo(() => {
-    // Don't show tips for first-time users
     if (isFirstTimeUser()) return false
     return !tipsHidden()
   })

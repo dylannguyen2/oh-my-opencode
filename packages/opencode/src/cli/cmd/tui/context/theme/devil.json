@@ -1,0 +1,224 @@
+{
+  "$schema": "https://opencode.ai/theme.json",
+  "defs": {
+    "background": "#0a0a0a",
+    "backgroundLight": "#1a0a0a",
+    "surface": "#1a1010",
+    "foreground": "#e8e0e0",
+    "muted": "#8a7070",
+    "red": "#ff3333",
+    "darkRed": "#cc2222",
+    "crimson": "#dc143c",
+    "blood": "#8b0000",
+    "ember": "#ff4500",
+    "flame": "#ff6b35",
+    "gold": "#ffd700",
+    "ash": "#4a4040"
+  },
+  "theme": {
+    "primary": {
+      "dark": "red",
+      "light": "darkRed"
+    },
+    "secondary": {
+      "dark": "crimson",
+      "light": "crimson"
+    },
+    "accent": {
+      "dark": "ember",
+      "light": "ember"
+    },
+    "error": {
+      "dark": "crimson",
+      "light": "crimson"
+    },
+    "warning": {
+      "dark": "flame",
+      "light": "flame"
+    },
+    "success": {
+      "dark": "ember",
+      "light": "ember"
+    },
+    "info": {
+      "dark": "gold",
+      "light": "gold"
+    },
+    "text": {
+      "dark": "foreground",
+      "light": "#1a0a0a"
+    },
+    "textMuted": {
+      "dark": "muted",
+      "light": "#6a5050"
+    },
+    "background": {
+      "dark": "background",
+      "light": "#f8f0f0"
+    },
+    "backgroundPanel": {
+      "dark": "#0f0808",
+      "light": "#f0e8e8"
+    },
+    "backgroundElement": {
+      "dark": "surface",
+      "light": "#e8e0e0"
+    },
+    "backgroundMenu": {
+      "dark": "#150a0a",
+      "light": "#f5f0f0"
+    },
+    "border": {
+      "dark": "#2a1515",
+      "light": "#d0c0c0"
+    },
+    "borderActive": {
+      "dark": "red",
+      "light": "darkRed"
+    },
+    "borderSubtle": {
+      "dark": "#1a0f0f",
+      "light": "#e0d8d8"
+    },
+    "diffAdded": {
+      "dark": "ember",
+      "light": "ember"
+    },
+    "diffRemoved": {
+      "dark": "crimson",
+      "light": "crimson"
+    },
+    "diffContext": {
+      "dark": "muted",
+      "light": "#6a5050"
+    },
+    "diffHunkHeader": {
+      "dark": "muted",
+      "light": "#6a5050"
+    },
+    "diffHighlightAdded": {
+      "dark": "flame",
+      "light": "flame"
+    },
+    "diffHighlightRemoved": {
+      "dark": "crimson",
+      "light": "crimson"
+    },
+    "diffAddedBg": {
+      "dark": "#1a2010",
+      "light": "#f0ffe0"
+    },
+    "diffRemovedBg": {
+      "dark": "#2a1010",
+      "light": "#ffe0e0"
+    },
+    "diffContextBg": {
+      "dark": "#0f0808",
+      "light": "#f0e8e8"
+    },
+    "diffLineNumber": {
+      "dark": "ash",
+      "light": "#c0b0b0"
+    },
+    "diffAddedLineNumberBg": {
+      "dark": "#1a2010",
+      "light": "#f0ffe0"
+    },
+    "diffRemovedLineNumberBg": {
+      "dark": "#2a1010",
+      "light": "#ffe0e0"
+    },
+    "markdownText": {
+      "dark": "foreground",
+      "light": "#1a0a0a"
+    },
+    "markdownHeading": {
+      "dark": "red",
+      "light": "darkRed"
+    },
+    "markdownLink": {
+      "dark": "ember",
+      "light": "ember"
+    },
+    "markdownLinkText": {
+      "dark": "flame",
+      "light": "flame"
+    },
+    "markdownCode": {
+      "dark": "gold",
+      "light": "#b8860b"
+    },
+    "markdownBlockQuote": {
+      "dark": "muted",
+      "light": "#6a5050"
+    },
+    "markdownEmph": {
+      "dark": "flame",
+      "light": "flame"
+    },
+    "markdownStrong": {
+      "dark": "red",
+      "light": "darkRed"
+    },
+    "markdownHorizontalRule": {
+      "dark": "ash",
+      "light": "#c0b0b0"
+    },
+    "markdownListItem": {
+      "dark": "crimson",
+      "light": "crimson"
+    },
+    "markdownListEnumeration": {
+      "dark": "ember",
+      "light": "ember"
+    },
+    "markdownImage": {
+      "dark": "ember",
+      "light": "ember"
+    },
+    "markdownImageText": {
+      "dark": "flame",
+      "light": "flame"
+    },
+    "markdownCodeBlock": {
+      "dark": "foreground",
+      "light": "#1a0a0a"
+    },
+    "syntaxComment": {
+      "dark": "muted",
+      "light": "#6a5050"
+    },
+    "syntaxKeyword": {
+      "dark": "red",
+      "light": "darkRed"
+    },
+    "syntaxFunction": {
+      "dark": "ember",
+      "light": "ember"
+    },
+    "syntaxVariable": {
+      "dark": "foreground",
+      "light": "#1a0a0a"
+    },
+    "syntaxString": {
+      "dark": "flame",
+      "light": "#cc4400"
+    },
+    "syntaxNumber": {
+      "dark": "gold",
+      "light": "#b8860b"
+    },
+    "syntaxType": {
+      "dark": "crimson",
+      "light": "crimson"
+    },
+    "syntaxOperator": {
+      "dark": "red",
+      "light": "darkRed"
+    },
+    "syntaxPunctuation": {
+      "dark": "foreground",
+      "light": "#1a0a0a"
+    }
+  }
+}

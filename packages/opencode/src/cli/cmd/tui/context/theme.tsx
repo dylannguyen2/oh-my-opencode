@@ -36,6 +36,8 @@ import vercel from "./theme/vercel.json" with { type: "json" }
 import vesper from "./theme/vesper.json" with { type: "json" }
 import zenburn from "./theme/zenburn.json" with { type: "json" }
 import carbonfox from "./theme/carbonfox.json" with { type: "json" }
+import devil from "./theme/devil.json" with { type: "json" }
+import lyra from "./theme/lyra.json" with { type: "json" }
 import { useKV } from "./kv"
 import { useRenderer } from "@opentui/solid"
 import { createStore, produce } from "solid-js/store"
@@ -146,6 +148,7 @@ export const DEFAULT_THEMES: Record<string, ThemeJson> = {
   ["catppuccin-macchiato"]: catppuccinMacchiato,
   cobalt2,
   cursor,
+  devil,
   dracula,
   everforest,
   flexoki,
@@ -172,6 +175,7 @@ export const DEFAULT_THEMES: Record<string, ThemeJson> = {
   vercel,
   zenburn,
   carbonfox,
+  lyra,
 }
 
 function resolveTheme(theme: ThemeJson, mode: "dark" | "light") {

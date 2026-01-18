@@ -1,4 +1,6 @@
-import { BoxRenderable, TextareaRenderable, MouseEvent, PasteEvent, t, dim, fg } from "@opentui/core"
+import { BoxRenderable, TextareaRenderable, MouseEvent, PasteEvent, t, dim, fg, RGBA } from "@opentui/core"
+import path from "path"
+import { pathToFileURL } from "url"
 import { createEffect, createMemo, type JSX, onMount, createSignal, onCleanup, Show, Switch, Match } from "solid-js"
 import "opentui-spinner/solid"
 import { useLocal } from "@tui/context/local"
@@ -31,6 +33,7 @@ import { DialogAlert } from "../../ui/dialog-alert"
 import { useToast } from "../../ui/toast"
 import { useKV } from "../../context/kv"
 import { useTextareaKeybindings } from "../textarea-keybindings"
+import { useExplorer } from "../../context/explorer"
 
 export type PromptProps = {
   sessionID?: string
@@ -50,6 +53,7 @@ export type PromptRef = {
   blur(): void
   focus(): void
   submit(): void
+  addFile(path: string, options?: { focus?: boolean }): void
 }
 
 const PLACEHOLDERS = ["Fix a TODO in the codebase", "What is the tech stack of this project?", "Fix broken tests"]
@@ -73,6 +77,8 @@ export function Prompt(props: PromptProps) {
   const renderer = useRenderer()
   const { theme, syntax } = useTheme()
   const kv = useKV()
+  const explorer = useExplorer()
+  const [cursorVisible, setCursorVisible] = createSignal(true)
 
   function promptModelWarning() {
     toast.show({
@@ -102,8 +108,13 @@ export function Prompt(props: PromptProps) {
   })
 
   createEffect(() => {
-    if (props.disabled) input.cursorColor = theme.backgroundElement
-    if (!props.disabled) input.cursorColor = theme.text
+    if (props.disabled) {
+      input.cursorColor = theme.backgroundElement
+    } else if (!cursorVisible()) {
+      input.cursorColor = RGBA.fromInts(0, 0, 0, 0)
+    } else {
+      input.cursorColor = theme.text
+    }
   })
 
   const lastUserMessage = createMemo(() => {
@@ -320,9 +331,11 @@ export function Prompt(props: PromptProps) {
     },
     focus() {
       input.focus()
+      setCursorVisible(true)
     },
     blur() {
       input.blur()
+      setCursorVisible(false)
     },
     set(prompt) {
       input.setText(prompt.input)
@@ -341,6 +354,69 @@ export function Prompt(props: PromptProps) {
     },
     submit() {
       submit()
+    },
+    addFile(filePath: string, options?: { focus?: boolean }) {
+      const filename = path.basename(filePath)
+      const absolutePath = path.isAbsolute(filePath) ? filePath : path.join(process.cwd(), filePath)
+      const url = pathToFileURL(absolutePath).toString()
+      const virtualText = `@${filename}`
+
+      const currentText = input.plainText
+      const needsSpace = currentText.length > 0 && !currentText.endsWith(" ")
+      const prefix = needsSpace ? " " : ""
+      const append = virtualText + " "
+
+      const extmarkStart = currentText.length + prefix.length
+      const extmarkEnd = extmarkStart + Bun.stringWidth(virtualText)
+
+      input.gotoBufferEnd()
+      input.insertText(prefix + append)
+
+      const extmarkId = input.extmarks.create({
+        start: extmarkStart,
+        end: extmarkEnd,
+        virtual: true,
+        styleId: fileStyleId,
+        typeId: promptPartTypeId,
+      })
+
+      const part: Omit<FilePart, "id" | "messageID" | "sessionID"> = {
+        type: "file",
+        mime: "text/plain",
+        filename,
+        url,
+        source: {
+          type: "file",
+          text: {
+            start: extmarkStart,
+            end: extmarkEnd,
+            value: virtualText,
+          },
+          path: filePath,
+        },
+      }
+
+      setStore("prompt", "input", currentText + prefix + append)
+      setStore(
+        "prompt",
+        "parts",
+        produce((parts) => {
+          const existingIndex = parts.findIndex((p) => p.type === "file" && "url" in p && p.url === url)
+          if (existingIndex === -1) {
+            parts.push(part)
+            setStore("extmarkToPartIndex", (map: Map<number, number>) => {
+              const newMap = new Map(map)
+              newMap.set(extmarkId, parts.length - 1)
+              return newMap
+            })
+          }
+        }),
+      )
+
+      if (options?.focus !== false) {
+        input.focus()
+        setCursorVisible(true)
+      }
     },
   }
 
@@ -485,6 +561,7 @@ export function Prompt(props: PromptProps) {
   async function submit() {
     if (props.disabled) return
     if (autocomplete?.visible) return
+    if (explorer.focused()) return
     if (!store.prompt.input) return
     const trimmed = store.prompt.input.trim()
     if (trimmed === "exit" || trimmed === "quit" || trimmed === ":q") {
@@ -825,7 +902,15 @@ export function Prompt(props: PromptProps) {
                     return
                   }
                 }
-                if (store.mode === "normal") autocomplete.onKeyDown(e)
+                if (store.mode === "normal") {
+                  if (e.name === "escape" && !autocomplete.visible) {
+                    input.blur()
+                    setCursorVisible(false)
+                    e.preventDefault()
+                    return
+                  }
+                  autocomplete.onKeyDown(e)
+                }
                 if (!autocomplete.visible) {
                   if (
                     (keybind.match("history_previous", e) && input.cursorOffset === 0) ||
@@ -924,11 +1009,11 @@ export function Prompt(props: PromptProps) {
                   promptPartTypeId = input.extmarks.registerType("prompt-part")
                 }
                 props.ref?.(ref)
-                setTimeout(() => {
-                  input.cursorColor = theme.text
-                }, 0)
               }}
-              onMouseDown={(r: MouseEvent) => r.target?.focus()}
+              onMouseDown={(r: MouseEvent) => {
+                r.target?.focus()
+                setCursorVisible(true)
+              }}
               focusedBackgroundColor={theme.backgroundElement}
               cursorColor={theme.text}
               syntaxStyle={syntax()}
