@@ -1,10 +1,11 @@
-import { Show, Switch, Match, createSignal } from "solid-js"
+import { Show, Switch, Match, createSignal, createMemo } from "solid-js"
 import { useTheme } from "../../context/theme"
 import { FileTree } from "./file-tree"
 import { GitChanges } from "./git-changes"
 import { useExplorer } from "../../context/explorer"
 import { useKeyboard } from "@opentui/solid"
 import { usePromptRef } from "../../context/prompt"
+import { useSync } from "../../context/sync"
 
 export type ExplorerTab = "explorer" | "changes"
 
@@ -12,7 +13,9 @@ export function ExplorerSidebar() {
   const { theme } = useTheme()
   const explorer = useExplorer()
   const promptRef = usePromptRef()
+  const sync = useSync()
   const [resizing, setResizing] = createSignal(false)
+  const branch = createMemo(() => sync.data.vcs?.branch)
 
   useKeyboard((evt) => {
     const ctrl = evt.ctrl && !evt.meta && !evt.shift
@@ -43,7 +46,18 @@ export function ExplorerSidebar() {
 
     if (!explorer.visible() || !explorer.focused()) return
 
-    if (evt.name === "i" || evt.name === "escape") {
+    if (evt.name === "escape") {
+      evt.preventDefault?.()
+      if (explorer.selected()) {
+        explorer.setSelected(undefined)
+      } else {
+        explorer.setFocused(false)
+        promptRef.current?.focus()
+      }
+      return
+    }
+
+    if (evt.name === "i") {
       evt.preventDefault?.()
       explorer.setFocused(false)
       promptRef.current?.focus()
@@ -57,6 +71,10 @@ export function ExplorerSidebar() {
     } else if (evt.name === "2") {
       evt.preventDefault?.()
       explorer.setTab("changes")
+      explorer.setFocusIndex(0)
+    } else if (evt.name === "tab") {
+      evt.preventDefault?.()
+      explorer.setTab(explorer.tab() === "explorer" ? "changes" : "explorer")
       explorer.setFocusIndex(0)
     } else if (evt.name === "[") {
       evt.preventDefault?.()
@@ -105,13 +123,16 @@ export function ExplorerSidebar() {
             flexShrink={0}
             flexDirection="column"
             onMouseDown={handleFocus}
-            border={explorer.focused() ? ["left"] : undefined}
-            borderColor={theme.primary}
+            border={explorer.focused() ? ["left"] : []}
+            borderColor={explorer.focused() ? theme.primary : undefined}
           >
             <box flexDirection="row" paddingLeft={1} paddingRight={1} paddingTop={1} gap={1}>
               <box onMouseDown={handleClose}>
                 <text fg={theme.textMuted}>✕</text>
               </box>
+              <Show when={branch()}>
+                <text fg={theme.primary}>{branch()}</text>
+              </Show>
               <box flexGrow={1} />
               <box flexDirection="row" gap={1}>
                 <box

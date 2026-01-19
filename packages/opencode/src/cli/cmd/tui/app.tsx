@@ -25,6 +25,7 @@ import { LocalProvider, useLocal } from "@tui/context/local"
 import { DialogModel, useConnected } from "@tui/component/dialog-model"
 import { DialogMcp } from "@tui/component/dialog-mcp"
 import { DialogStatus } from "@tui/component/dialog-status"
+import { DialogTodo } from "@tui/component/dialog-todo"
 import { DialogThemeList } from "@tui/component/dialog-theme-list"
 import { DialogHelp } from "./ui/dialog-help"
 import { CommandProvider, useCommandDialog } from "@tui/component/dialog-command"
@@ -399,6 +400,7 @@ function App() {
       category: "Agent",
       disabled: true,
       onSelect: () => {
+        if (explorer.focused()) return
         local.agent.move(1)
       },
     },
@@ -418,6 +420,7 @@ function App() {
       category: "Agent",
       disabled: true,
       onSelect: () => {
+        if (explorer.focused()) return
         local.agent.move(-1)
       },
     },
@@ -436,6 +439,17 @@ function App() {
       value: "opencode.status",
       onSelect: () => {
         dialog.replace(() => <DialogStatus />)
+      },
+      category: "System",
+    },
+    {
+      title: "View todo list",
+      keybind: "todo_view",
+      value: "opencode.todo",
+      onSelect: () => {
+        const data = route.data
+        if (data.type !== "session") return
+        dialog.replace(() => <DialogTodo sessionID={data.sessionID} />)
       },
       category: "System",
     },

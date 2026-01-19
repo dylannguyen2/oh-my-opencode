@@ -49,12 +49,17 @@ export function ExplorerProvider(props: ParentProps) {
   const route = useRoute()
   const kv = useKV()
 
-  const [visible, setVisible] = createSignal(false)
+  const [visible, setVisibleSignal] = createSignal(kv.get("explorer_visible", false) as boolean)
   const [focused, setFocused] = createSignal(false)
   const [tab, setTab] = createSignal<ExplorerTab>("explorer")
   const [selected, setSelected] = createSignal<SelectedFile | undefined>()
   const [expanded, setExpanded] = createSignal<Set<string>>(new Set())
   const [focusIndex, setFocusIndex] = createSignal(0)
+
+  const setVisible = (v: boolean) => {
+    setVisibleSignal(v)
+    kv.set("explorer_visible", v)
+  }
 
   const sidebarWidth = () => kv.get("explorer_sidebar_width", DEFAULT_SIDEBAR_WIDTH) as number
   const previewWidth = () => kv.get("explorer_preview_width", DEFAULT_PREVIEW_WIDTH) as number
@@ -106,8 +111,12 @@ export function ExplorerProvider(props: ParentProps) {
     },
     async (path) => {
       if (!path) return undefined
-      const result = await sdk.client.file.read({ path })
-      return result.data
+      try {
+        const result = await sdk.client.file.read({ path })
+        return result.data
+      } catch {
+        return { type: "text" as const, content: "" }
+      }
     },
   )
 
@@ -115,8 +124,7 @@ export function ExplorerProvider(props: ParentProps) {
     visible,
     setVisible: (v) => {
       setVisible(v)
-      if (v) setFocused(true)
-      else setFocused(false)
+      if (!v) setFocused(false)
     },
     focused,
     setFocused,

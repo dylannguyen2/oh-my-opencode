@@ -266,10 +266,7 @@ export namespace File {
       }
     }
 
-    return changedFiles.map((x) => ({
-      ...x,
-      path: path.relative(Instance.directory, x.path),
-    }))
+    return changedFiles
   }
 
   export async function read(file: string): Promise<Content> {

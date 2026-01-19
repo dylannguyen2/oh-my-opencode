@@ -795,6 +795,12 @@ export namespace MCP {
     // The SDK has already added the state parameter to the authorization URL
     // We just need to open the browser
     log.info("opening browser for oauth", { mcpName, url: authorizationUrl, state: oauthState })
+
+    // IMPORTANT: Register the callback listener BEFORE opening the browser to avoid race condition.
+    // If the OAuth provider redirects back quickly (e.g., user already authorized), the callback
+    // could arrive before we start listening, causing "Invalid or expired state parameter" error.
+    const callbackPromise = McpOAuthCallback.waitForCallback(oauthState)
+
     try {
       const subprocess = await open(authorizationUrl)
       // The open package spawns a detached process and returns immediately.
@@ -823,7 +829,7 @@ export namespace MCP {
     }
 
     // Wait for callback using the OAuth state parameter
-    const code = await McpOAuthCallback.waitForCallback(oauthState)
+    const code = await callbackPromise
 
     // Validate and clear the state
     const storedState = await McpAuth.getOAuthState(mcpName)

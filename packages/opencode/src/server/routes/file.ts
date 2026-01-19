@@ -6,6 +6,8 @@ import { Ripgrep } from "../../file/ripgrep"
 import { LSP } from "../../lsp"
 import { Instance } from "../../project/instance"
 import { lazy } from "../../util/lazy"
+import { errors } from "../error"
+import path from "path"
 
 export const FileRoutes = lazy(() =>
   new Hono()
@@ -192,6 +194,43 @@ export const FileRoutes = lazy(() =>
       async (c) => {
         const content = await File.status()
         return c.json(content)
+      },
+    )
+    .put(
+      "/file/content",
+      describeRoute({
+        summary: "Write file",
+        description: "Write content to a specified file.",
+        operationId: "file.write",
+        responses: {
+          200: {
+            description: "File written successfully",
+            content: {
+              "application/json": {
+                schema: resolver(z.boolean()),
+              },
+            },
+          },
+          ...errors(400),
+        },
+      }),
+      validator(
+        "json",
+        z.object({
+          path: z.string(),
+          content: z.string(),
+        }),
+      ),
+      async (c) => {
+        const { path: filePath, content } = c.req.valid("json")
+        const full = path.join(Instance.directory, filePath)
+
+        if (!Instance.containsPath(full)) {
+          throw new Error(`Access denied: path escapes project directory`)
+        }
+
+        await Bun.write(full, content)
+        return c.json(true)
       },
     ),
 )

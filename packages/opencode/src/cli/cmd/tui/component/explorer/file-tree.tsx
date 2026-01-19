@@ -101,11 +101,6 @@ export function FileTree() {
           }
         }
       }
-    } else if (evt.name === "escape") {
-      evt.preventDefault?.()
-      if (explorer.selected()) {
-        explorer.setSelected(undefined)
-      }
     } else if (evt.name === "right") {
       evt.preventDefault?.()
       const node = list[idx]
